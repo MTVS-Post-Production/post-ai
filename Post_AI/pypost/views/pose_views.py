@@ -29,10 +29,10 @@ mp_drawing_styles = mp.solutions.drawing_styles
 mp_holistic = mp.solutions.holistic
 mp_pose = mp.solutions.pose
 
-df = pd.read_csv('./pypost/pose_data.csv')
+df = pd.read_csv('big_pose_data.csv')
 cos_df = df.iloc[:, :-1]
 
-folder_list = sorted(os.listdir(r"D:\blender_mp4"))
+folder_list = sorted(os.listdir("D:\\blender_mp4"))
 pose_dict = {index:item for index, item in enumerate(folder_list)}
 
 degrees = {'left_elbow': [], 'right_elbow': [], 'left_armpit': [], 'right_armpit': [], 'left_hip_outside': [],

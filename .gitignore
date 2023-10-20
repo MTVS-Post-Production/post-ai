@@ -18,6 +18,7 @@ Post_AI/pose5.py
 Post_AI/pose6.py
 Post_AI/pose7.py
 Post_AI/save_poses.py
+Post_AI/make_gif.py
 
 Post_AI/requirements_order.txt
 Post_AI/voice_requirements.txt
