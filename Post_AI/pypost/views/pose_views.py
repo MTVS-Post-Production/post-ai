@@ -13,6 +13,19 @@ from sklearn.metrics.pairwise import cosine_similarity
 from collections import Counter
 import base64
 
+# 부호를 계산하기
+def calculate_sign(a, b, c):
+    sign_x1 = c[0] - b[0]
+    sign_x2 = a[0] - b[0]
+
+    if sign_x1 >= 0 and sign_x2 >= 0:
+        return 1
+    elif sign_x1 >= 0 and sign_x2 < 0:
+        return 0
+    elif sign_x1 < 0 and sign_x2 >= 0:
+        return 0
+    else:
+        return 1
 
 # image로 각도 구하기
 def three_angle(a, b, c):
@@ -22,14 +35,19 @@ def three_angle(a, b, c):
     radians = np.arctan2(c[1] - b[1], c[0] - b[0]) - np.arctan2(a[1] - b[1], a[0] - b[0])
     angle = np.abs(radians * 180.0 / np.pi)
 
-    return angle
+    if calculate_sign(a, b, c) == 1:
+        return angle
+    else:
+        rev_angle = 360 - angle
+        return rev_angle
 
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_holistic = mp.solutions.holistic
 mp_pose = mp.solutions.pose
 
-df = pd.read_csv('big_pose_data.csv')
+df = pd.read_csv('rev_pose_data.csv')
+df = df[df['label'] != 5]
 cos_df = df.iloc[:, :-1]
 
 folder_list = sorted(os.listdir("D:\\blender_mp4"))
@@ -62,8 +80,6 @@ def video_pose():
             if not success:
                 break
 
-            # image = cv2.flip(image, 1)
-
             # 이미지 사이즈 키우기
             image = cv2.resize(image, (1080,720))
             image.flags.writeable = False
@@ -85,7 +101,7 @@ def video_pose():
                 try:
                     landmarks = results.pose_landmarks.landmark
                     
-                    # 좌표 구하기 : 만약 측정된 결과값이 없으면(포인트가 안 찍히면 이전값으로 처리 / 혹은 측정이 된 값들을 합치고 나눈 다음 처리?)
+                    # 좌표 구하기
                     def get_corrs(pose_num):
                         corr = [landmarks[pose_num].x, landmarks[pose_num].y, landmarks[pose_num].z]
                         return corr
