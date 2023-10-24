@@ -9,7 +9,6 @@ import mediapipe as mp
 import numpy as np
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
-
 from collections import Counter
 import base64
 
@@ -50,8 +49,13 @@ df = pd.read_csv('rev_pose_data.csv')
 df = df[df['label'] != 5]
 cos_df = df.iloc[:, :-1]
 
-folder_list = sorted(os.listdir("D:\\blender_mp4"))
-pose_dict = {index:item for index, item in enumerate(folder_list)}
+folder_list = sorted(os.listdir(r"D:\blender_mp4_big"))
+pose_label_list = []
+for temp in folder_list:
+    if temp.split('_')[0] not in pose_label_list:
+        pose_label_list.append(temp.split('_')[0])
+
+pose_dict = {index:item for index, item in enumerate(pose_label_list)}
 
 degrees = {'left_elbow': [], 'right_elbow': [], 'left_armpit': [], 'right_armpit': [], 'left_hip_outside': [],
            'right_hip_outside': [], 'left_hip_inside': [], 'right_hip_inside': [], 'left_knee': [], 'right_knee': []}
@@ -63,15 +67,13 @@ bp = Blueprint('checkpose', __name__, url_prefix='/checkpose')
 def video_pose():
     pose = request.get_json()['pose']  # 스프링 서버에서 전달 받은 base64로 인코딩된 파일
     file_format = request.get_json()['format'] # 스프링 서버에서 전달 받은 파일 형식(ex) mp3, mp4, wav)
-    print(pose)
     pose_video = base64.b64decode(pose)
 
     os.makedirs('./pypost/pose_estimation', exist_ok=True)
     with open('./pypost/pose_estimation/received_file.' + file_format, 'wb') as file:
         file.write(pose_video)
 
-
-    cap = cv2.VideoCapture('./pose_estimation/received_file.' + file_format)
+    cap = cv2.VideoCapture('./pypost/pose_estimation/received_file.' + file_format)
     pose_list = []
 
     with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
@@ -80,15 +82,12 @@ def video_pose():
             if not success:
                 break
 
-            # 이미지 사이즈 키우기
-            image = cv2.resize(image, (1080,720))
             image.flags.writeable = False
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             results = pose.process(image)
 
             image.flags.writeable = True
             image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-            height, width, _ = image.shape
 
             if results.pose_landmarks:
                 mp_drawing.draw_landmarks(
@@ -100,12 +99,15 @@ def video_pose():
 
                 try:
                     landmarks = results.pose_landmarks.landmark
-                    
-                    # 좌표 구하기
+
+                    # 좌표값 구하기
                     def get_corrs(pose_num):
-                        corr = [landmarks[pose_num].x, landmarks[pose_num].y, landmarks[pose_num].z]
+                        height, width, _ = image.shape
+                        corr = [landmarks[pose_num].x * width, landmarks[pose_num].y * height,
+                                landmarks[pose_num].z * width]
                         return corr
 
+                    # 좌표 구하기 : 만약 측정된 결과값이 없으면(포인트가 안 찍히면 이전값으로 처리 / 혹은 측정이 된 값들을 합치고 나눈 다음 처리?)
                     left_shoulder = get_corrs(11)  # 왼쪽 어깨 (11)
                     right_shoulder = get_corrs(12)  # 오른쪽 어깨 (12)
 
@@ -159,29 +161,22 @@ def video_pose():
                     test_data = np.array(test_df)
 
                     similarity = cosine_similarity(pose_data, test_data)
-                    threshold = 0.98
-
-                    # scaled_labels = np.where(similarity > threshold, similarity, 0)
                     predicted_labels = np.argmax(similarity, axis=0)
 
                     result = Counter(predicted_labels)
                     max_result, _ = result.most_common(1)[0]
 
-                    text = pose_dict[int(df.iloc[max_result][-1])]
+                    text = pose_dict[int(df.iloc[max_result]['label'])]
 
                     cv2.putText(image, text=text,
-                                org=(20, 30), fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                                fontScale=2, color=(255, 177, 177), thickness=3)
+                                org=(20, 50), fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+                                fontScale=2, color=(25, 25, 25), thickness=3)
 
-                    print(text)
                     pose_list.append(text)
 
                 except Exception as e:
                     print(e)
                     pass
-
-            # 이미지 단위로 저장 및 보여주기
-            cv2.imshow('MediaPipe Holistic', image)
 
             if cv2.waitKey(1) == ord('q'):
                 break
@@ -190,8 +185,6 @@ def video_pose():
     cv2.destroyAllWindows()
 
     response_data = list(set(pose_list))
-
-    # response_data = ['chunsic', 'dance']
     print("응답 전송:", response_data)
 
     return jsonify(response_data)
