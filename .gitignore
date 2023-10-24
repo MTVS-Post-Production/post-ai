@@ -25,6 +25,7 @@ Post_AI/voice_requirements.txt
 
 Post_AI/pypost/models/
 Post_AI/pypost/templates/
+Post_AI/pypost/pose_estimation/
 
 Post_AI/pypost/trans_voice/bin
 Post_AI/pypost/trans_voice/datasets

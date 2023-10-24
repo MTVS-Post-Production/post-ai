@@ -185,6 +185,7 @@ def video_pose():
     cv2.destroyAllWindows()
 
     response_data = list(set(pose_list))
+
     print("응답 전송:", response_data)
 
     return jsonify(response_data)
