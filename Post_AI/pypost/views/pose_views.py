@@ -66,14 +66,13 @@ bp = Blueprint('checkpose', __name__, url_prefix='/checkpose')
 @bp.route('/', methods=['GET', 'POST'])
 def video_pose():
     pose = request.get_json()['pose']  # 스프링 서버에서 전달 받은 base64로 인코딩된 파일
-    file_format = request.get_json()['format'] # 스프링 서버에서 전달 받은 파일 형식(ex) mp3, mp4, wav)
     pose_video = base64.b64decode(pose)
 
     os.makedirs('./pypost/pose_estimation', exist_ok=True)
-    with open('./pypost/pose_estimation/received_file.' + file_format, 'wb') as file:
+    with open('./pypost/pose_estimation/received_file.mp4', 'wb') as file:
         file.write(pose_video)
 
-    cap = cv2.VideoCapture('./pypost/pose_estimation/received_file.' + file_format)
+    cap = cv2.VideoCapture('./pypost/pose_estimation/received_file.mp4')
     pose_list = []
 
     with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
@@ -172,6 +171,7 @@ def video_pose():
                                 org=(20, 50), fontFace=cv2.FONT_HERSHEY_SIMPLEX,
                                 fontScale=2, color=(25, 25, 25), thickness=3)
 
+                    print(f"행동:{text}, 번호:{max_result}")
                     pose_list.append(text)
 
                 except Exception as e:

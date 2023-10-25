@@ -266,7 +266,7 @@ def Voice_Convert(sid, vc_transform, input_audio, file_index2, index_rate):
     input_audio = input_audio.replace('\\', '/')
     tgt_sr, audio_opt = vc_single(0, input_audio, vc_transform, f0_file, f0method0, file_index1, file_index2, index_rate, filter_radius0, resample_sr0, rms_mix_rate0, protect0['value'])
 
-    file_name = input_audio.split('/')[-2] + f"_{model_name}.wav"
+    file_name = "result_voice.wav"
     os.makedirs("./pypost/trans_voice/vocal_results", exist_ok=True)
     convert_path = f"./pypost/trans_voice/vocal_results/{file_name}"
 

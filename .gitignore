@@ -8,10 +8,13 @@ __pycache__/
 *.mp4
 *.mp3
 *.exe
+*.json
+*.yaml
 
 Post_AI/bin/
 Post_AI/output/
 
+Post_AI/test.py
 Post_AI/make_3dpose_csv.py
 Post_AI/make_pose_csv.py
 Post_AI/pose5.py
