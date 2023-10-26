@@ -17,6 +17,7 @@ def calculate_sign(a, b, c):
     sign_x1 = c[0] - b[0]
     sign_x2 = a[0] - b[0]
 
+    # (x1, y1), (x2, y2), (x3, y3)일때, x3-x2와 x1-x2의 부호가 같으면 1을 리턴, 아니면 0을 리턴
     if sign_x1 >= 0 and sign_x2 >= 0:
         return 1
     elif sign_x1 >= 0 and sign_x2 < 0:
@@ -34,6 +35,7 @@ def three_angle(a, b, c):
     radians = np.arctan2(c[1] - b[1], c[0] - b[0]) - np.arctan2(a[1] - b[1], a[0] - b[0])
     angle = np.abs(radians * 180.0 / np.pi)
 
+    # return angle, 만약 부호가 다르면 각도를 반대로 재야 함
     if calculate_sign(a, b, c) == 1:
         return angle
     else:
@@ -42,7 +44,6 @@ def three_angle(a, b, c):
 
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
-mp_holistic = mp.solutions.holistic
 mp_pose = mp.solutions.pose
 
 df = pd.read_csv('rev_pose_data.csv')
@@ -68,6 +69,7 @@ def video_pose():
     pose = request.get_json()['pose']  # 스프링 서버에서 전달 받은 base64로 인코딩된 파일
     pose_video = base64.b64decode(pose)
 
+    # 디코딩한 mp4 파일을 폴더에 저장
     os.makedirs('./pypost/pose_estimation', exist_ok=True)
     with open('./pypost/pose_estimation/received_file.mp4', 'wb') as file:
         file.write(pose_video)
@@ -75,6 +77,7 @@ def video_pose():
     cap = cv2.VideoCapture('./pypost/pose_estimation/received_file.mp4')
     pose_list = []
 
+    # 영상을 기반으로 추론
     with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
         while cap.isOpened():
             success, image = cap.read()
@@ -84,6 +87,7 @@ def video_pose():
             image.flags.writeable = False
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             results = pose.process(image)
+            height, width, _ = image.shape
 
             image.flags.writeable = True
             image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
@@ -101,12 +105,10 @@ def video_pose():
 
                     # 좌표값 구하기
                     def get_corrs(pose_num):
-                        height, width, _ = image.shape
-                        corr = [landmarks[pose_num].x * width, landmarks[pose_num].y * height,
-                                landmarks[pose_num].z * width]
+                        corr = [landmarks[pose_num].x * width, landmarks[pose_num].y * height, landmarks[pose_num].z * width]
                         return corr
 
-                    # 좌표 구하기 : 만약 측정된 결과값이 없으면(포인트가 안 찍히면 이전값으로 처리 / 혹은 측정이 된 값들을 합치고 나눈 다음 처리?)
+                    # 좌표 구하기
                     left_shoulder = get_corrs(11)  # 왼쪽 어깨 (11)
                     right_shoulder = get_corrs(12)  # 오른쪽 어깨 (12)
 
@@ -167,11 +169,7 @@ def video_pose():
 
                     text = pose_dict[int(df.iloc[max_result]['label'])]
 
-                    cv2.putText(image, text=text,
-                                org=(20, 50), fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                                fontScale=2, color=(25, 25, 25), thickness=3)
-
-                    print(f"행동:{text}, 번호:{max_result}")
+                    print(f"행동:{text}, 행번호:{max_result}")
                     pose_list.append(text)
 
                 except Exception as e:
