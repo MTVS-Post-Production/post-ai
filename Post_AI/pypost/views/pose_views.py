@@ -50,13 +50,7 @@ df = pd.read_csv('rev_pose_data.csv')
 df = df[df['label'] != 5]
 cos_df = df.iloc[:, :-1]
 
-folder_list = sorted(os.listdir(r"D:\blender_mp4_big"))
-pose_label_list = []
-for temp in folder_list:
-    if temp.split('_')[0] not in pose_label_list:
-        pose_label_list.append(temp.split('_')[0])
-
-pose_dict = {index:item for index, item in enumerate(pose_label_list)}
+pose_dict = {0:'catch', 1:'jump', 2:'lift', 3:'run', 4:'sit', 5:'spell', 6:'walk'}
 
 degrees = {'left_elbow': [], 'right_elbow': [], 'left_armpit': [], 'right_armpit': [], 'left_hip_outside': [],
            'right_hip_outside': [], 'left_hip_inside': [], 'right_hip_inside': [], 'left_knee': [], 'right_knee': []}
@@ -83,7 +77,8 @@ def video_pose():
             success, image = cap.read()
             if not success:
                 break
-
+            
+            image = cv2.resize(image, (720,720))
             image.flags.writeable = False
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             results = pose.process(image)
@@ -169,7 +164,7 @@ def video_pose():
 
                     text = pose_dict[int(df.iloc[max_result]['label'])]
 
-                    print(f"행동:{text}, 행번호:{max_result}")
+                    # print(f"행동:{text}, 행번호:{max_result}")
                     pose_list.append(text)
 
                 except Exception as e:

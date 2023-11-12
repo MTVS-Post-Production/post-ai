@@ -15,9 +15,6 @@ from google.cloud import storage
 KEY_PATH = "D:/User/user/post-ai/Post_AI/pypost/google-storage.json"
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"]= KEY_PATH
 
-storage_client = storage.Client()
-buckets = list(storage_client.list_buckets())
-
 bp = Blueprint('voice', __name__, url_prefix='/voice')
 
 @bp.route('/')
@@ -35,6 +32,8 @@ def convert_voice():
     vc_transform = 0  # 옥타브
     index_rate = 0.7  # 변환 강도
     
+    print("수신 완료")
+
     # 같은 user id의 파일 존재 시 버킷 내 객체 삭제
     bucket_name = 'voice_production'
     destination_blob_name = f'result_voice_{user_id}'
@@ -65,5 +64,6 @@ def convert_voice():
     # 객체 업로드
     blob.upload_from_filename(convert_path)
     url = f"https://storage.cloud.google.com/voice_production/{destination_blob_name}"
+    print("구글 스토리지 업로드 완료")
 
     return jsonify(url)
