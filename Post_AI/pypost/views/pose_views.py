@@ -171,13 +171,48 @@ def video_pose():
                     print(e)
                     pass
 
-            if cv2.waitKey(1) == ord('q'):
-                break
+    test_df = pd.DataFrame(degrees)
+    print("총 frame 수:", test_df.index[-1])
 
+    # 영상을 전부 기록 후 5프레임마다 측정
+    for i in range(test_df.index[-1] // 5):
+        pose_data = np.array(cos_df)
+
+        # 코사인 유사도
+        similarity_lst = []
+        for k in range(i*5, (i+1)*5):
+            test_data = np.array(test_df.iloc[k:(k+1), :])
+            similarity = cosine_similarity(pose_data, test_data)
+            print(similarity)
+            predicted_labels = tuple(np.argmax(similarity, axis=0))
+            print(predicted_labels)
+            similarity_lst.append(predicted_labels)
+
+        result = Counter(similarity_lst)
+        print(result)
+
+        # 경우의 수: [5], [4, 1], [3, 1, 1], [2, 2, 1], [2, 1, 1, 1], [1, 1, 1, 1, 1]
+        if len(set(result.values())) % 2 != 0:
+            if 3 not in set(result.values()):
+                # 만약 동률인 경우가 있으면, 가장 추정 확률이 높았던 동작을 리턴
+                max_result = max(result.items(), key=lambda x: (x[1], max(x[0])))
+            else:
+                max_result, _ = result.most_common(1)[0]
+        else:
+            max_result, _ = result.most_common(1)[0]  # (가장 많이 나온 행, 나온 횟수)
+
+        text = pose_dict[int(df.iloc[max_result[0]]['label'])]
+
+        print(f"행동:{text}, 번호:{max_result[0]}")
+        pose_list.append(text)
+
+
+    print(pose_list)
     cap.release()
     cv2.destroyAllWindows()
 
-    response_data = list(set(pose_list))
+    # response_data = list(set(pose_list))
+    response_data = pose_list
 
     print("응답 전송:", response_data)
 

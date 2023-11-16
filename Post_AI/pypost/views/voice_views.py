@@ -30,7 +30,7 @@ def convert_voice():
 
     sid = model_name + ".pth"
     vc_transform = 0  # 옥타브
-    index_rate = 0.7  # 변환 강도
+    index_rate = 0.5  # 변환 강도
     
     print("수신 완료")
 
@@ -60,8 +60,10 @@ def convert_voice():
     file_index = f"./Post_AI/pypost/trans_voice/logs/{model_name}/added_IVF1203_Flat_nprobe_1_{model_name}_v2.index"
 
     convert_path = AI_Convert.Voice_Convert(sid, vc_transform, input_audio, file_index, index_rate)
+    print(convert_path)
 
     # 객체 업로드
+    time.sleep(0.5)
     blob.upload_from_filename(convert_path)
     url = f"https://storage.cloud.google.com/voice_production/{destination_blob_name}"
     print("구글 스토리지 업로드 완료")
