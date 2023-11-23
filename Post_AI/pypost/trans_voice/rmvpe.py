@@ -1,4 +1,4 @@
-import torch, numpy as np
+import sys, torch, numpy as np, traceback, pdb
 import torch.nn as nn
 from time import time as ttime
 import torch.nn.functional as F
@@ -375,8 +375,8 @@ class RMVPE:
         return f0
 
     def to_local_average_cents(self, salience, thred=0.05):
-        center = np.argmax(salience, axis=1)
-        salience = np.pad(salience, ((0, 0), (4, 4)))
+        center = np.argmax(salience, axis=1)  # 帧长#index
+        salience = np.pad(salience, ((0, 0), (4, 4)))  # 帧长,368
         center += 4
         todo_salience = []
         todo_cents_mapping = []
@@ -385,12 +385,12 @@ class RMVPE:
         for idx in range(salience.shape[0]):
             todo_salience.append(salience[:, starts[idx] : ends[idx]][idx])
             todo_cents_mapping.append(self.cents_mapping[starts[idx] : ends[idx]])
-        todo_salience = np.array(todo_salience)
-        todo_cents_mapping = np.array(todo_cents_mapping)
+        todo_salience = np.array(todo_salience)  # 帧长，9
+        todo_cents_mapping = np.array(todo_cents_mapping)  # 帧长，9
         product_sum = np.sum(todo_salience * todo_cents_mapping, 1)
-        weight_sum = np.sum(todo_salience, 1)
-        devided = product_sum / weight_sum
-        # t3 = ttime()
-        maxx = np.max(salience, axis=1)
+        weight_sum = np.sum(todo_salience, 1)  # 帧长
+        devided = product_sum / weight_sum  # 帧长
+        maxx = np.max(salience, axis=1)  # 帧长
         devided[maxx <= thred] = 0
+
         return devided

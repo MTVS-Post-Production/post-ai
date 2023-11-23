@@ -13,6 +13,7 @@ __pycache__/
 
 Post_AI/bin/
 Post_AI/output/
+Post_AI/pypost/bin/
 
 Post_AI/test.py
 Post_AI/make_3dpose_csv.py
@@ -24,10 +25,12 @@ Post_AI/pose8.py
 Post_AI/save_poses.py
 Post_AI/make_gif.py
 Post_AI/lstm_test.ipynb
+Post_AI/checkpoint-7566/
 
-
+Post_AI/[videoMAE]_video_classification.ipynb
 Post_AI/requirements_order.txt
 Post_AI/voice_requirements.txt
+Post_AI/all_requirements.txt
 
 Post_AI/pypost/models/
 Post_AI/pypost/templates/

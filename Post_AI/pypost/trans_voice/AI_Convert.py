@@ -78,8 +78,9 @@ gpus = "-".join([i[0] for i in gpu_infos])
 hubert_model = None
 
 def load_hubert():
+    print("load hubert...")
     global hubert_model
-    models, _, _ = checkpoint_utils.load_model_ensemble_and_task(["hubert_base.pt"], suffix="")
+    models, _, _ = checkpoint_utils.load_model_ensemble_and_task(["D:/User/user/post-ai/Post_AI/hubert_base.pt"], suffix="")
     hubert_model = models[0]
     hubert_model = hubert_model.to(config.device)
     if config.is_half:
@@ -204,6 +205,7 @@ def get_vc(sid, to_return_protect0, to_return_protect1):
 
     # weights 폴더 안에 있는 모델.pth 불러오기
     person = "%s/%s" % (weight_root, sid)
+    person = person.replace('\\', '/')
     print("loading %s" % person)
     cpt = torch.load(person, map_location="cpu")
     tgt_sr = cpt["config"][-1]  # 48000
@@ -253,7 +255,6 @@ sr_dict = {"32k": 32000, "40k": 40000, "48k": 48000}
 def Voice_Convert(sid, vc_transform, input_audio, file_index2, index_rate):
     # 보컬 합성하기
     protect0 = 0.33
-    model_name = sid.split('.')[-2]
     spk_item, protect0, _ = get_vc(sid, protect0, protect0)
     f0method0 = "rmvpe"
     filter_radius0 = 3
@@ -276,7 +277,7 @@ def Voice_Convert(sid, vc_transform, input_audio, file_index2, index_rate):
         print("저장에 실패했습니다.")
 
     rvc_vocal = AudioSegment.from_wav(convert_path)
-    result = rvc_vocal + 3  # 데시벨 조절
+    result = rvc_vocal + 10  # 데시벨 조절
 
     # 에코 추가
     # echo1 = rvc_vocal - 12
