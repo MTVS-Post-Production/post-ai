@@ -13,5 +13,6 @@
 # 참고 자료
 ### 오픈소스(github)
 - https://github.com/google/mediapipe
+- https://huggingface.co/docs/transformers/v4.32.0/ko/tasks/video_classification
 - https://github.com/RVC-Project/Retrieval-based-Voice-Conversion-WebUI
 - https://github.com/guochengqian/Magic123
