@@ -4,7 +4,7 @@
 - 만약 길이가 20초보다 길면 20초 단위로 영상 분할(겹치는 영역은 10초) 후 추론
 
 ### Voice Change
-- LiveLink를 통해 음성 업로드시 선택한 모델에 따라서 음성 변조 수행
+- LiveLink를 통해 음성 업로드시 선택한 모델에 따라서 검색 기반 음성 변조 수행
 
 ### Image to 3d Object
 - 2d image 업로드 시 해당 image를 기반으로 3d Object Mesh를 생성
