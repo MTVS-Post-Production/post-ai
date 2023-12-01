@@ -31,7 +31,18 @@ def convert_voice():
     user_id = request.get_json()['user_id']  # user의 번호
 
     sid = model_name + ".pth"
-    vc_transform = 0  # 옥타브
+
+    male_models = ['soonjae', 'dujardin']
+    female_models = ['jihyo', 'taeyeon', 'simone', 'iu', 'dahyun']
+
+    # 옥타브
+    if model_name in male_models:
+        vc_transform = -6
+    elif model_name in female_models:
+        vc_transform = 12
+    else:
+        vc_transform = 0
+
     index_rate = 0.5  # 변환 강도
 
     print("수신 완료")

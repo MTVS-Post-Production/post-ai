@@ -3,11 +3,9 @@ import torch
 from torchvision.io import read_video
 from torchvision.transforms import Compose, Lambda, Normalize, Resize, ToPILImage, ToTensor
 from transformers import VideoMAEImageProcessor, VideoMAEForVideoClassification
-
 import cv2
-import math
 
-
+# pose 분류
 class PoseClassification():
     def __init__(self, model_ckpt):
         self.image_processor = VideoMAEImageProcessor.from_pretrained(model_ckpt)
@@ -25,7 +23,6 @@ class PoseClassification():
         self.resize_to = (height, width)
         self.num_frames_to_sample = self.model.config.num_frames
 
-       
     def load_video(self, video_file):
         self.video_file = video_file
         self.video_file_path = '/'.join(video_file.split('/')[:-1])
@@ -36,9 +33,8 @@ class PoseClassification():
 
         return self.video
 
-
     def transform_video(self, video):
-        video = video.permute(1, 0, 2, 3)  # (C, T, H, W) -> (T, C, H, W)
+        video = video.permute(1, 0, 2, 3)
         transformed_video = []
         for frame in video:
             frame = frame / 255.0
@@ -49,8 +45,7 @@ class PoseClassification():
             transformed_video.append(frame)
         transformed_video = torch.stack(transformed_video)
 
-        return transformed_video.permute(1, 0, 2, 3)  # (T, C, H, W) -> (C, T, H, W)
-
+        return transformed_video.permute(1, 0, 2, 3)
 
     def preprocessing(self):
         val_transform = Compose([
@@ -59,7 +54,7 @@ class PoseClassification():
                     transform=Compose(
                         [
                             UniformTemporalSubsample(self.num_frames_to_sample),
-                            Lambda(self.transform_video),  # 수정된 부분
+                            Lambda(self.transform_video),
                         ]
                     ),
                 ),
@@ -67,7 +62,6 @@ class PoseClassification():
         self.video_tensor = val_transform({"video": self.video})["video"]
 
         return self.video_tensor
-
 
     def run_inference(self, model, video):
         perumuted_sample_test_video = video.permute(1, 0, 2, 3)
@@ -89,7 +83,6 @@ class PoseClassification():
         predicted_class_idx = logits.argmax(-1).item()
 
         return self.model.config.id2label[predicted_class_idx]
-    
 
 
 # 20초 단위로 비디오 분할

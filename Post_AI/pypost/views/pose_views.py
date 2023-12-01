@@ -32,7 +32,7 @@ def video_pose():
     file_kbyte = file_byte // 1024
 
     if file_kbyte < 6:
-        print("There's no file to check")
+        print("Error: There's no file to check")
         response_data = []
         return jsonify(response_data)
 
@@ -61,6 +61,8 @@ def video_pose():
         video = f'./pypost/pose_estimation/{video_list[i]}'
         video_classification.load_video(video)
         result = video_classification.predict()
+        if result == 'run':
+            result = 'walk'
         response_data.append(result)
     
     endtime = time.time()

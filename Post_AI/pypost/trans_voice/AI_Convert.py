@@ -267,6 +267,7 @@ def Voice_Convert(sid, vc_transform, input_audio, file_index2, index_rate):
     input_audio = input_audio.replace('\\', '/')
     tgt_sr, audio_opt = vc_single(0, input_audio, vc_transform, f0_file, f0method0, file_index1, file_index2, index_rate, filter_radius0, resample_sr0, rms_mix_rate0, protect0['value'])
 
+    # file_name = f"voice_4_{sid.split('.')[0]}.wav"
     file_name = "result_voice.wav"
     os.makedirs("./pypost/trans_voice/vocal_results", exist_ok=True)
     convert_path = f"./pypost/trans_voice/vocal_results/{file_name}"
@@ -280,10 +281,10 @@ def Voice_Convert(sid, vc_transform, input_audio, file_index2, index_rate):
     result = rvc_vocal + 10  # 데시벨 조절
 
     # 에코 추가
-    # echo1 = rvc_vocal - 12
-    # echo2 = rvc_vocal - 15
-    # rvc_vocal = rvc_vocal.overlay(echo1, position=125)
-    # rvc_vocal = rvc_vocal.overlay(echo2, position=250)
+    echo1 = rvc_vocal - 12
+    echo2 = rvc_vocal - 15
+    rvc_vocal = rvc_vocal.overlay(echo1, position=125)
+    rvc_vocal = rvc_vocal.overlay(echo2, position=250)
     
     result.export(convert_path, format="wav")
 
