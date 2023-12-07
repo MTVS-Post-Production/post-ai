@@ -105,12 +105,6 @@ for root, dirs, files in os.walk(index_root, topdown=False):
         if name.endswith(".index") and "trained" not in name:
             index_paths.append("%s/%s" % (root, name))
 
-uvr5_names = []
-for name in os.listdir(weight_uvr5_root):
-    if name.endswith(".pth") or "onnx" in name:
-        uvr5_names.append(name.replace(".pth", ""))
-
-
 def vc_single(sid, input_audio_path, f0_up_key, f0_file, f0_method, file_index, file_index2, 
               index_rate, filter_radius, resample_sr, rms_mix_rate, protect): 
 
@@ -278,14 +272,14 @@ def Voice_Convert(sid, vc_transform, input_audio, file_index2, index_rate):
         print("저장에 실패했습니다.")
 
     rvc_vocal = AudioSegment.from_wav(convert_path)
-    result = rvc_vocal + 10  # 데시벨 조절
+    rvc_vocal = rvc_vocal + 10  # 데시벨 조절
 
     # 에코 추가
-    echo1 = rvc_vocal - 12
-    echo2 = rvc_vocal - 15
-    rvc_vocal = rvc_vocal.overlay(echo1, position=125)
-    rvc_vocal = rvc_vocal.overlay(echo2, position=250)
+    # echo1 = rvc_vocal - 13
+    # echo2 = rvc_vocal - 16
+    # rvc_vocal = rvc_vocal.overlay(echo1, position=75)
+    # rvc_vocal = rvc_vocal.overlay(echo2, position=125)
     
-    result.export(convert_path, format="wav")
+    rvc_vocal.export(convert_path, format="wav")
 
     return convert_path

@@ -10,6 +10,9 @@ __pycache__/
 *.exe
 *.json
 *.yaml
+*.ckpt
+*.pth
+*.pkl
 
 Post_AI/bin/
 Post_AI/output/
@@ -35,4 +38,4 @@ Post_AI/pypost/trans_voice/uvr5_weights
 Post_AI/pypost/trans_voice/vocal_results
 Post_AI/pypost/trans_voice/weights
 
-Post_AI/pypost/views/voice_views2.py
+Post_AI/pypost/uvr/models
