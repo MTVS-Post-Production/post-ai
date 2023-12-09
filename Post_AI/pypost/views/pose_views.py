@@ -4,11 +4,9 @@ flask_dir = os.getcwd() + "\\pypost"
 sys.path.append(flask_dir)
 
 import base64
-import cv2
 from flask import Blueprint, request, jsonify
-import math
 import torch
-from video_classification import PoseClassification, make_clip
+from video_classification import PoseClassification, make_clip, VideoCrop
 import time
 
 bp = Blueprint('checkpose', __name__, url_prefix='/checkpose')
@@ -36,22 +34,21 @@ def video_pose():
         response_data = []
         return jsonify(response_data)
 
-    # 만약 길이가 20초 이상이면 비디오 분할 수행
-    cap = cv2.VideoCapture(check_video)
-    frame_length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    fps = int(cap.get(cv2.CAP_PROP_FPS))
-    video_duration = math.floor(frame_length / fps)
-    cap.release()
-    cv2.destroyAllWindows()
+    # 영상 자르기
+    cropped_path = VideoCrop(check_video)
 
-    if video_duration > 20:
-        make_clip(check_video)
-        # 기존 영상은 bin 폴더를 만들어 이동시켜 원본 영상을 확인할 수 있게끔 조치
-        os.makedirs('./pypost/bin', exist_ok=True)
+    # 만약 길이가 20초 이상이면 비디오 분할 수행
+    result = make_clip(cropped_path)
+    os.makedirs('./pypost/bin', exist_ok=True)
+
+    if os.path.exists(check_video):
         shutil.move(check_video, './pypost/bin/received_file.mp4')
 
+    if result == 'done':
+        shutil.move(cropped_path, './pypost/bin/cropped_file.mp4')
+
     torch.cuda.empty_cache()
-    model_ckpt = './checkpoint-7566'  # 모델 ckpt 불러오기
+    model_ckpt = './checkpoint-43153'  # 모델 ckpt 불러오기
     video_classification = PoseClassification(model_ckpt)
 
     # pose 추론 진행
@@ -61,11 +58,65 @@ def video_pose():
         video = f'./pypost/pose_estimation/{video_list[i]}'
         video_classification.load_video(video)
         result = video_classification.predict()
-        if result == 'run':
-            result = 'walk'
         response_data.append(result)
     
     endtime = time.time()
     print(f"응답 전송:{response_data}, 소요 시간:{endtime-starttime}s")
+
+    return jsonify(response_data)
+
+
+@bp.route('/formdata', methods=['GET', 'POST'])
+def video_pose_formdata():
+    starttime = time.time()
+    print()
+    pose = request.files['pose']  # 스프링 서버에서 전달 받은 base64로 인코딩된 파일
+    shutil.rmtree('./pypost/pose_estimation')
+
+    # 디코딩한 mp4 파일을 폴더에 저장
+    os.makedirs('./pypost/pose_estimation', exist_ok=True)
+    check_video = './pypost/pose_estimation/received_file.mp4'
+    pose.save(check_video)
+
+    # 만약 영상의 크기가 6kb보다 작으면 오류 영상이라고 판단해 아무것도 리턴하지 않음
+    file_byte = os.path.getsize(check_video)
+    file_kbyte = file_byte // 1024
+
+    if file_kbyte < 6:
+        print("Error: There's no file to check")
+        response_data = []
+        return jsonify(response_data)
+
+    # 영상 자르기
+    cropped_path = VideoCrop(check_video)
+
+    # 만약 길이가 20초 이상이면 비디오 분할 수행
+    result = make_clip(cropped_path)
+    os.makedirs('./pypost/bin', exist_ok=True)
+
+    if os.path.exists(check_video):
+        shutil.move(check_video, './pypost/bin/received_file.mp4')
+
+    if result == 'done':
+        shutil.move(cropped_path, './pypost/bin/cropped_file.mp4')
+
+
+    torch.cuda.empty_cache()
+    model_ckpt = './checkpoint-43153'  # 모델 ckpt 불러오기
+    video_classification = PoseClassification(model_ckpt)
+
+    # pose 추론 진행
+    video_list = os.listdir('./pypost/pose_estimation')
+    response_data = []
+    another = []
+    for i in range(len(video_list)):
+        video = f'./pypost/pose_estimation/{video_list[i]}'
+        video_classification.load_video(video)
+        result, second, third = video_classification.predict()
+        response_data.append(result)
+        another.extend([second, third])
+    
+    endtime = time.time()
+    print(f"응답 전송:{response_data}, 소요 시간:{endtime-starttime}s, 두번째 추론:{another[0]}, 세번째 추론:{another[1]}")
 
     return jsonify(response_data)
