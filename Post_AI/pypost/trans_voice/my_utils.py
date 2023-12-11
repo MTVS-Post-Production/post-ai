@@ -4,9 +4,6 @@ import numpy as np
 
 def load_audio(file, sr):
     try:
-        # https://github.com/openai/whisper/blob/main/whisper/audio.py#L26
-        # This launches a subprocess to decode audio while down-mixing and resampling as necessary.
-        # Requires the ffmpeg CLI and `ffmpeg-python` package to be installed.
         file = (
             file.strip(" ").strip('"').strip("\n").strip('"').strip(" ")
         ) 

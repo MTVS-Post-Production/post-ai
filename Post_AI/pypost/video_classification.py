@@ -25,6 +25,7 @@ class PoseClassification():
         self.resize_to = (height, width)
         self.num_frames_to_sample = self.model.config.num_frames
 
+    # 비디오 전처리
     def load_video(self, video_file):
         self.video_file = video_file
         self.video_file_path = '/'.join(video_file.split('/')[:-1])
@@ -79,6 +80,7 @@ class PoseClassification():
 
         return logits
 
+    # 추론 실행
     def predict(self):
         self.preprocessing()
         logits = self.run_inference(self.model, self.video_tensor)

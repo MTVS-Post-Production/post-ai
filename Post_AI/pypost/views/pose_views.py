@@ -19,6 +19,9 @@ def video_pose():
     pose = request.get_json()['pose']  # 스프링 서버에서 전달 받은 base64로 인코딩된 파일
     pose_video = base64.b64decode(pose)
 
+    if os.path.exists('./pypost/pose_estimation'):
+        shutil.rmtree('./pypost/pose_estimation', ignore_errors=True, onerror=None)
+
     # 디코딩한 mp4 파일을 폴더에 저장
     os.makedirs('./pypost/pose_estimation', exist_ok=True)
     check_video = './pypost/pose_estimation/received_file.mp4'
@@ -62,5 +65,8 @@ def video_pose():
     
     endtime = time.time()
     print(f"응답 전송:{response_data}, 소요 시간:{endtime-starttime}s")
+
+    if os.path.exists('./pypost/bin'):
+        shutil.rmtree('./pypost/bin', ignore_errors=True, onerror=None)
 
     return jsonify(response_data)
