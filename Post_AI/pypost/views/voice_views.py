@@ -75,7 +75,7 @@ def convert_voice():
     with open(input_audio, 'wb') as file:
         file.write(voice_file)
 
-    volume = AudioSegment.from_file(input_audio, format="wav")
+    volume = AudioSegment.from_file(input_audio, format="mp4")
     volume = volume + 10
     volume.export(input_audio, format='wav')
 
